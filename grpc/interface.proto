@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package ping;
-option go_package = "https://github.com/NaddiNadja/peer-to-peer;ping";
+option go_package = "https://github.com/ThomasBavn/peer-to-peer;ping";
 
 
 service Ping {
