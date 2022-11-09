@@ -18,86 +18,122 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// PingClient is the client API for Ping service.
+// NodeClient is the client API for Node service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type PingClient interface {
+type NodeClient interface {
 	Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Reply, error)
+	CriticalSections(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Reply, error)
 }
 
-type pingClient struct {
+type nodeClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPingClient(cc grpc.ClientConnInterface) PingClient {
-	return &pingClient{cc}
+func NewNodeClient(cc grpc.ClientConnInterface) NodeClient {
+	return &nodeClient{cc}
 }
 
-func (c *pingClient) Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Reply, error) {
+func (c *nodeClient) Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Reply, error) {
 	out := new(Reply)
-	err := c.cc.Invoke(ctx, "/ping.Ping/ping", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/ping.Node/ping", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PingServer is the server API for Ping service.
-// All implementations must embed UnimplementedPingServer
+func (c *nodeClient) CriticalSections(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Reply, error) {
+	out := new(Reply)
+	err := c.cc.Invoke(ctx, "/ping.Node/criticalSections", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// NodeServer is the server API for Node service.
+// All implementations must embed UnimplementedNodeServer
 // for forward compatibility
-type PingServer interface {
+type NodeServer interface {
 	Ping(context.Context, *Request) (*Reply, error)
-	mustEmbedUnimplementedPingServer()
+	CriticalSections(context.Context, *Request) (*Reply, error)
+	mustEmbedUnimplementedNodeServer()
 }
 
-// UnimplementedPingServer must be embedded to have forward compatible implementations.
-type UnimplementedPingServer struct {
+// UnimplementedNodeServer must be embedded to have forward compatible implementations.
+type UnimplementedNodeServer struct {
 }
 
-func (UnimplementedPingServer) Ping(context.Context, *Request) (*Reply, error) {
+func (UnimplementedNodeServer) Ping(context.Context, *Request) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
-func (UnimplementedPingServer) mustEmbedUnimplementedPingServer() {}
+func (UnimplementedNodeServer) CriticalSections(context.Context, *Request) (*Reply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CriticalSections not implemented")
+}
+func (UnimplementedNodeServer) mustEmbedUnimplementedNodeServer() {}
 
-// UnsafePingServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to PingServer will
+// UnsafeNodeServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to NodeServer will
 // result in compilation errors.
-type UnsafePingServer interface {
-	mustEmbedUnimplementedPingServer()
+type UnsafeNodeServer interface {
+	mustEmbedUnimplementedNodeServer()
 }
 
-func RegisterPingServer(s grpc.ServiceRegistrar, srv PingServer) {
-	s.RegisterService(&Ping_ServiceDesc, srv)
+func RegisterNodeServer(s grpc.ServiceRegistrar, srv NodeServer) {
+	s.RegisterService(&Node_ServiceDesc, srv)
 }
 
-func _Ping_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Node_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PingServer).Ping(ctx, in)
+		return srv.(NodeServer).Ping(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ping.Ping/ping",
+		FullMethod: "/ping.Node/ping",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PingServer).Ping(ctx, req.(*Request))
+		return srv.(NodeServer).Ping(ctx, req.(*Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Ping_ServiceDesc is the grpc.ServiceDesc for Ping service.
+func _Node_CriticalSections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).CriticalSections(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ping.Node/criticalSections",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).CriticalSections(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Node_ServiceDesc is the grpc.ServiceDesc for Node service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Ping_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "ping.Ping",
-	HandlerType: (*PingServer)(nil),
+var Node_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "ping.Node",
+	HandlerType: (*NodeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ping",
-			Handler:    _Ping_Ping_Handler,
+			Handler:    _Node_Ping_Handler,
+		},
+		{
+			MethodName: "criticalSections",
+			Handler:    _Node_CriticalSections_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
